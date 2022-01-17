@@ -1,7 +1,6 @@
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -100,19 +99,26 @@ fun App(globalWindowState: WindowState, windowScope: FrameWindowScope) {
                                 y * 100 + x
                             } else y * 100 + x
                         }
+                        val isOpen = openPoints.contains(index)
+                        val isMark = markPoints.contains(index)
+                        val isMine = remember(gameNumber, minePoints.size) {
+                            minePoints.contains(index)
+                        }
+
                         LaunchedEffect(gameNumber, gameType.l, gameType.h) {
                             indexesPoints.add(index)
                         }
-                        val background = animateColorAsState(if (openPoints.contains(index)) Color.LightGray else Color.Gray)
+                        val background = animateColorAsState(if (isOpen) Color.LightGray else Color.Gray)
+                        println("test for in fore item $x in $y")
                         Box(
                             modifier = Modifier
                                 .background(background.value)
                                 .border(BorderStroke(1.dp, Color.DarkGray))
                                 .size(25.dp, 25.dp)
-                                .onPointerEvent(PointerEventType.Press){
+                                .onPointerEvent(PointerEventType.Press) {
                                     if (it.buttons.isSecondaryPressed) {
                                         println("onPointerEvent to index:$index")
-                                        if (!markPoints.contains(index) && !openPoints.contains(index)) {
+                                        if (!isMark && !isOpen) {
                                             markPoints.add(index)
                                             if (markPoints.containsAll(minePoints)) {
                                                 gameStatus = MinesWeeperGame.GameStatus.Win
@@ -123,24 +129,27 @@ fun App(globalWindowState: WindowState, windowScope: FrameWindowScope) {
                                     }
                                 }
                                 .combinedClickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() },
                                     onClick = {
                                         if (gameStatus !is MinesWeeperGame.GameStatus.InGame) return@combinedClickable
 
-                                        if (minePoints.contains(index) && !markPoints.contains(index)) {
-                                            openPoints.add(index)
+                                        if (isMine && !isMark) {
                                             gameStatus = MinesWeeperGame.GameStatus.Losing
-                                        } else if (!openPoints.contains(index) && !markPoints.contains(index)) {
+                                        } else if (!isOpen && !isMark) {
                                             openRadianPointsScope.launch {
-                                                checkAndOpenRadianPoints(minePoints, indexesPoints, openPoints, markPoints, index)
+                                                val startCheckTime = System.currentTimeMillis()
+                                                checkAndOpenRadianPoints(
+                                                    minePoints, indexesPoints,
+                                                    openPoints, markPoints,
+                                                    index
+                                                )
+                                                println("click check result time si ${System.currentTimeMillis() - startCheckTime}")
                                             }
                                         }
-                                        println("click for $index it is mine ${minePoints.contains(index)}")
+                                        println("click for $index it is mine $isMine")
                                     },
                                     onLongClick = {
                                         println("onPointerEvent to index:$index")
-                                        if (!markPoints.contains(index) && !openPoints.contains(index)) {
+                                        if (!isMark && !isOpen) {
                                             markPoints.add(index)
                                             if (markPoints.containsAll(minePoints)) {
                                                 gameStatus = MinesWeeperGame.GameStatus.Win
@@ -150,7 +159,7 @@ fun App(globalWindowState: WindowState, windowScope: FrameWindowScope) {
                                         }
                                     },
                                     onDoubleClick = {
-                                        if (openPoints.contains(index)) {
+                                        if (isOpen) {
                                             openRadianPointsScope.launch {
                                                 checkAndOpenRadianPoints(
                                                     minePoints, indexesPoints,
@@ -162,12 +171,12 @@ fun App(globalWindowState: WindowState, windowScope: FrameWindowScope) {
                                     }
                                 ),
                             contentAlignment = Alignment.Center
-                        ){
+                        ) {
                             val minesCount = remember(gameNumber, index, minePoints.size) {
                                 searchMines(minePoints, index)
                             }
-                            if (openPoints.contains(index)) {
-                                if (minePoints.contains(index)) {
+                            if (isOpen) {
+                                if (isMine) {
                                     Text(
                                         text = "*",
                                         color = Color.Red,
@@ -182,7 +191,7 @@ fun App(globalWindowState: WindowState, windowScope: FrameWindowScope) {
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                 }
-                            } else if (markPoints.contains(index)) {
+                            } else if (isMark) {
                                 Text(
                                     modifier = Modifier.padding(0.dp),
                                     text = "M",
@@ -234,7 +243,6 @@ fun App(globalWindowState: WindowState, windowScope: FrameWindowScope) {
                     })
                 }
                 Item("Выход", onClick = {
-
                 })
             }
         }
