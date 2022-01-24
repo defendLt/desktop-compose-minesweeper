@@ -1,9 +1,5 @@
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import model.MinerPoint
 
 class MinesWeeperGame(
@@ -13,6 +9,7 @@ class MinesWeeperGame(
     private var gameNumber: Int = 0
     private var gameStatus: GameStatus = GameStatus.InGame
     private var gameType: GameType = GameType.Easy
+    private var gameTimer: GameTimer = GameTimer()
     private val minerPoints: MutableMap<Int, MinerPoint> = mutableMapOf()
 
     private val _gameState = MutableSharedFlow<GameState>(replay = 1)
@@ -30,14 +27,11 @@ class MinesWeeperGame(
             generatePoints()
             generateMines()
             recalculateRadianMineCount()
-            gameStep = 0
+            gameStep = -1
             gameStatus = GameStatus.InGame
             gameNumber++
-            GameState(
-                gameStep, gameNumber, gameStatus, gameType, minePoints, minerPoints.toMap()
-            ).let {
-                _gameState.emit(it)
-            }
+            gameTimer.start()
+            updateGameState()
         }
     }
 
@@ -159,6 +153,7 @@ class MinesWeeperGame(
     }
 
     private fun openAllPoints(){
+        gameTimer.stop()
         minerPoints.forEach { _, point ->
             point.isOpen = true
         }
@@ -195,7 +190,7 @@ class MinesWeeperGame(
     private fun updateGameState() {
         gameStateScope.launch {
             GameState(
-                ++gameStep, gameNumber, gameStatus, gameType, minePoints, minerPoints.toMap()
+                ++gameStep, gameNumber, gameStatus, gameType, gameTimer, minePoints, minerPoints.toMap()
             ).let {
                 _gameState.emit(it)
             }
@@ -242,7 +237,35 @@ class MinesWeeperGame(
         val gameNumber: Int,
         val gameStatus: GameStatus,
         val gameType: GameType,
+        val gameTimer: GameTimerListener,
         val minePoints: Int,
         val minerPoints: Map<Int, MinerPoint>
     )
+
+    interface GameTimerListener {
+        val timerStateFlow: StateFlow<Int>
+    }
+    private class GameTimer(
+        private val timerScope: CoroutineScope = CoroutineScope(Dispatchers.Default),
+        private var timerJob: Job? = null
+    ) : GameTimerListener {
+        private val _timerStateFlow = MutableStateFlow(0)
+        override val timerStateFlow: StateFlow<Int> get() = _timerStateFlow.asStateFlow()
+
+        fun start() {
+            stop()
+            timerJob = timerScope.launch {
+                var timeValue = 0
+                _timerStateFlow.emit(timeValue)
+                while (true) {
+                    delay(1000)
+                    _timerStateFlow.emit(++timeValue)
+                }
+            }
+        }
+
+        fun stop() {
+            timerJob?.cancel()
+        }
+    }
 }
