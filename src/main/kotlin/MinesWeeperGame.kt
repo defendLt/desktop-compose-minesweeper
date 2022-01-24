@@ -124,7 +124,7 @@ class MinesWeeperGame(
     private fun generatePoints(){
         minerPoints.clear()
         for (y in 1..gameType.h) {
-            for (x in 1..gameType.l){
+            for (x in 1..gameType.w){
                 val index = if(y > 9){
                     y * 100 + x
                 } else y * 100 + x
@@ -197,7 +197,7 @@ class MinesWeeperGame(
         }
     }
 
-    sealed class GameType(val h: Int, val l: Int) {
+    sealed class GameType(val h: Int, val w: Int) {
         object Easy : GameType(8, 8)
         object Medium : GameType(16, 16)
         object Hard : GameType(16, 32)
@@ -209,6 +209,7 @@ class MinesWeeperGame(
                 Hard -> 99
             }
         }
+
         fun getName(): String {
             return when(this){
                 Easy -> "Новичек"

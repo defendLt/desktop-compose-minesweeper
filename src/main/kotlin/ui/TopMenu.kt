@@ -6,7 +6,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import ui.MineSweeperStyles
 
 @Composable
 internal fun TopMenu(
@@ -16,9 +16,9 @@ internal fun TopMenu(
 ){
     Row(
         modifier = Modifier
-            .padding(bottom = 8.dp)
-            .width(200.dp)
-            .padding(start = 8.dp, end = 8.dp),
+            .padding(bottom = MineSweeperStyles.windowPaddingSize)
+            .width(MineSweeperStyles.topMenuWidthSize)
+            .padding(start = MineSweeperStyles.windowPaddingSize, end = MineSweeperStyles.windowPaddingSize),
         horizontalArrangement = Arrangement.Center
     ) {
         Text(
