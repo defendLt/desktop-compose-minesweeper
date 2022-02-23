@@ -7,10 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -31,14 +28,12 @@ private fun GameApp(
     onCloseRequest: () -> Unit
 ) = MaterialTheme {
 
-    val gameState: MinesWeeperGame.GameState? by minesWeeperGame.gameState.collectAsState(null)
+    val gameState: MinesWeeperGame.GameState by minesWeeperGame.gameState.collectAsState()
 
-    if(gameState == null) return@MaterialTheme
-
-    val gameTimer: Int by gameState!!.gameTimer.timerStateFlow.collectAsState(0)
-    val gameNumber = gameState!!.gameNumber
-    val gameType = gameState!!.gameType
-    val gameStatus = gameState!!.gameStatus
+    val gameTimer: Int by gameState.gameTimer.timerStateFlow.collectAsState(0)
+    val gameNumber = gameState.gameNumber
+    val gameType = gameState.gameType
+    val gameStatus = gameState.gameStatus
 
     val topRowColor = animateColorAsState(
         when(gameStatus){
@@ -54,12 +49,12 @@ private fun GameApp(
         verticalArrangement = Arrangement.Top
     ) {
         TopMenu(
-            minesCount = "${gameState?.minePoints ?: gameType.getMineCount()}",
+            minesCount = "${gameState.minePoints ?: gameType.getMineCount()}",
             statusName = gameStatus.getStatusName(),
             timerValue = gameTimer.toString()
         )
 
-        GameGrid(gameNumber, gameType, gameState!!){ onClickSellEvent ->
+        GameGrid(gameNumber, gameType, gameState){ onClickSellEvent ->
             when(onClickSellEvent){
                 is OnCellClickEvent.OnSingleClick -> minesWeeperGame.openPoint(onClickSellEvent.index)
                 is OnCellClickEvent.OnLongClick -> minesWeeperGame.markPoint(onClickSellEvent.index)
@@ -112,7 +107,7 @@ fun main() {
             icon = painterResource(MineSweeperStyles.cellIsMarkIconSrc),
             title = "MineSweeper",
             onCloseRequest = ::exitApplication,
-            resizable = false,
+            resizable = true,
             state = globalWindowState,
         ){
             GameApp(globalWindowState, this, minesWeeperGame, ::exitApplication)

@@ -79,7 +79,6 @@ internal fun GameSell(
             ),
         contentAlignment = Alignment.Center
     ) {
-        println("test for create item $index")
         val minesCount = remember(gameNumber, index) {
             if (point.radianMineCount > 0) "${point.radianMineCount}"
             else ""

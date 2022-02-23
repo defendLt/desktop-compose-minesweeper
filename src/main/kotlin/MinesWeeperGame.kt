@@ -7,13 +7,15 @@ class MinesWeeperGame(
 ) {
     private var gameStep: Int = 0
     private var gameNumber: Int = 0
-    private var gameStatus: GameStatus = GameStatus.InGame
+    private var gameStatus: GameStatus = GameStatus.WaitGame
     private var gameType: GameType = GameType.Easy
     private var gameTimer: GameTimer = GameTimer()
     private val minerPoints: MutableMap<Int, MinerPoint> = mutableMapOf()
 
-    private val _gameState = MutableSharedFlow<GameState>(replay = 1)
-    val gameState: SharedFlow<GameState> get() = _gameState.asSharedFlow()
+    private val _gameState = MutableStateFlow(
+        GameState(gameStep, gameNumber, gameStatus, gameType, gameTimer, minePoints, minerPoints)
+    )
+    val gameState: StateFlow<GameState> get() = _gameState.asStateFlow()
 
     private val minePoints
         get() = minerPoints.count { it.value.isMine } - minerPoints.count { it.value.isMark }
@@ -220,12 +222,14 @@ class MinesWeeperGame(
     }
 
     sealed interface GameStatus {
+        object WaitGame : GameStatus
         object InGame : GameStatus
         object Win : GameStatus
         object Losing : GameStatus
 
         fun getStatusName(): String {
             return when (this) {
+                WaitGame -> ""
                 InGame -> "В игре"
                 Win -> "Победа!"
                 Losing -> "Поражение"
