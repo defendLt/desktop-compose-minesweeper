@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.times
@@ -66,12 +67,15 @@ private fun GameApp(
         }
     }
 
+    val density = LocalDensity.current
     LaunchedEffect(gameType.h, gameType.w){
-        val width = (gameType.w * MineSweeperStyles.cellSize) + MineSweeperStyles.windowPaddingSize * 2
-        val height = (gameType.h * MineSweeperStyles.cellSize) +
-                MineSweeperStyles.windowPaddingSize * 4 + MineSweeperStyles.topMenuHeightSize
+        density.run {
+            val width = (gameType.w * MineSweeperStyles.cellSize) + MineSweeperStyles.windowPaddingSize * 2
+            val height = (gameType.h * MineSweeperStyles.cellSize) +
+                    MineSweeperStyles.windowPaddingSize * 4 + MineSweeperStyles.topMenuHeightSize
 
-        globalWindowState.size = globalWindowState.size.copy(width = width, height = height)
+            globalWindowState.size = globalWindowState.size.copy(width = width, height = height)
+        }
     }
 
     windowScope.MenuBar {
