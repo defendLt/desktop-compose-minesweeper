@@ -15,11 +15,11 @@ enum class StringValueType {
     GAME_STATUS_LOSING
 }
 
-internal interface StringValues {
+internal interface StringRes {
     fun get(type: StringValueType): String
 }
 
-object StringValuesRu : StringValues {
+object StringResRu : StringRes {
     override fun get(type: StringValueType) =
         when (type) {
             StringValueType.WINDOW_TITLE -> "MineSweeper"
@@ -35,5 +35,24 @@ object StringValuesRu : StringValues {
             StringValueType.GAME_STATUS_IN_GAME -> "В игре"
             StringValueType.GAME_STATUS_WIN -> "Победа!"
             StringValueType.GAME_STATUS_LOSING -> "Поражение"
+        }
+}
+
+object StringResEn : StringRes {
+    override fun get(type: StringValueType) =
+        when (type) {
+            StringValueType.WINDOW_TITLE -> "MineSweeper"
+            StringValueType.MENU_MAIN -> "Game"
+            StringValueType.MENU_NEW_GAME -> "New game"
+            StringValueType.MENU_DIFFICULTY -> "Difficulty"
+            StringValueType.MENU_EXIT -> "Exit"
+
+            StringValueType.GAME_DIFFICULTY_EASY -> "Easy"
+            StringValueType.GAME_DIFFICULTY_MEDIUM -> "Medium"
+            StringValueType.GAME_DIFFICULTY_HARD -> "Hard"
+
+            StringValueType.GAME_STATUS_IN_GAME -> "In game"
+            StringValueType.GAME_STATUS_WIN -> "Win!"
+            StringValueType.GAME_STATUS_LOSING -> "Losing"
         }
 }
