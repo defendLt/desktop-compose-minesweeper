@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -49,7 +52,7 @@ private fun GameApp(
         verticalArrangement = Arrangement.Top
     ) {
         TopMenu(
-            minesCount = "${gameState.minePoints ?: gameType.getMineCount()}",
+            minesCount = "${gameState.minePoints}",
             statusName = gameStatus.getStatusName(),
             timerValue = gameTimer.toString()
         )
@@ -72,12 +75,12 @@ private fun GameApp(
     }
 
     windowScope.MenuBar {
-        Menu("Игра") {
-            Item("Новая игра", onClick = {
+        Menu(stringResource(StringValueType.MENU_MAIN)) {
+            Item(stringResource(StringValueType.MENU_MAIN), onClick = {
                 minesWeeperGame.resetGame()
             })
             Menu(
-                "Сложность"
+                stringResource(StringValueType.MENU_DIFFICULTY)
             ){
                 Item(MinesWeeperGame.GameType.Easy.getName(), onClick = {
                     minesWeeperGame.changeGameType(MinesWeeperGame.GameType.Easy)
@@ -89,7 +92,7 @@ private fun GameApp(
                     minesWeeperGame.changeGameType(MinesWeeperGame.GameType.Hard)
                 })
             }
-            Item("Выход", onClick = {
+            Item(stringResource(StringValueType.MENU_EXIT), onClick = {
                 onCloseRequest()
             })
         }
@@ -105,7 +108,7 @@ fun main() {
 
         Window(
             icon = painterResource(MineSweeperStyles.cellIsMarkIconSrc),
-            title = "MineSweeper",
+            title = stringResource(StringValueType.WINDOW_TITLE),
             onCloseRequest = ::exitApplication,
             resizable = true,
             state = globalWindowState,

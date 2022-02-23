@@ -214,9 +214,9 @@ class MinesWeeperGame(
 
         fun getName(): String {
             return when(this){
-                Easy -> "Новичек"
-                Medium -> "Любитель"
-                Hard -> "Профессионал"
+                Easy -> stringResource(StringValueType.GAME_DIFFICULTY_EASY)
+                Medium -> stringResource(StringValueType.GAME_DIFFICULTY_MEDIUM)
+                Hard -> stringResource(StringValueType.GAME_DIFFICULTY_HARD)
             }
         }
     }
@@ -230,9 +230,9 @@ class MinesWeeperGame(
         fun getStatusName(): String {
             return when (this) {
                 WaitGame -> ""
-                InGame -> "В игре"
-                Win -> "Победа!"
-                Losing -> "Поражение"
+                InGame -> stringResource(StringValueType.GAME_STATUS_IN_GAME)
+                Win -> stringResource(StringValueType.GAME_STATUS_WIN)
+                Losing -> stringResource(StringValueType.GAME_STATUS_LOSING)
             }
         }
     }

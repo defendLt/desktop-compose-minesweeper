@@ -1,0 +1,1 @@
+fun stringResource(type: StringValueType) = StringValuesRu.get(type)
