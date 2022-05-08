@@ -35,9 +35,9 @@ private fun GameApp(
     val gameTimer: Int by minesWeeperGame.gameTimerListener.timerStateFlow.collectAsState()
 
     val topRowColor = animateColorAsState(
-        when(gameState.gameStatus){
-            MinesWeeperGame.GameStatus.Win -> MineSweeperStyles.winGameBackground
-            MinesWeeperGame.GameStatus.Losing -> MineSweeperStyles.loseGameBackground
+        when(gameState.status){
+            MinesWeeperGame.Status.Win -> MineSweeperStyles.winGameBackground
+            MinesWeeperGame.Status.Losing -> MineSweeperStyles.loseGameBackground
             else -> MineSweeperStyles.inGameBackground
         }
     )
@@ -49,13 +49,13 @@ private fun GameApp(
     ) {
         TopMenu(
             minesCount = "${gameState.minePointsCount}",
-            statusName = gameState.gameStatus.name,
+            statusName = gameState.status.name,
             timerValue = gameTimer.toString()
         )
 
         GameGrid(
-            gameState.gameNumber,
-            gameState.gameDifficultyType,
+            gameState.number,
+            gameState.difficultyType,
             gameState.minerPoints
         ) { onClickSellEvent ->
             when (onClickSellEvent) {
@@ -67,10 +67,10 @@ private fun GameApp(
     }
 
     val density = LocalDensity.current
-    LaunchedEffect(gameState.gameDifficultyType.h, gameState.gameDifficultyType.w){
+    LaunchedEffect(gameState.difficultyType.h, gameState.difficultyType.w){
         density.run {
-            val width = (gameState.gameDifficultyType.w * MineSweeperStyles.cellSize) + MineSweeperStyles.windowPaddingSize * 2
-            val height = (gameState.gameDifficultyType.h * MineSweeperStyles.cellSize) +
+            val width = (gameState.difficultyType.w * MineSweeperStyles.cellSize) + MineSweeperStyles.windowPaddingSize * 2
+            val height = (gameState.difficultyType.h * MineSweeperStyles.cellSize) +
                     MineSweeperStyles.windowPaddingSize * 4 + MineSweeperStyles.topMenuHeightSize
 
             globalWindowState.size = globalWindowState.size.copy(width = width, height = height)
@@ -85,14 +85,14 @@ private fun GameApp(
             Menu(
                 stringResource(StringValueType.MENU_DIFFICULTY)
             ){
-                Item(MinesWeeperGame.GameDifficultyType.Easy.name, onClick = {
-                    minesWeeperGame.changeGameType(MinesWeeperGame.GameDifficultyType.Easy)
+                Item(MinesWeeperGame.DifficultyType.Easy.name, onClick = {
+                    minesWeeperGame.changeGameType(MinesWeeperGame.DifficultyType.Easy)
                 })
-                Item(MinesWeeperGame.GameDifficultyType.Medium.name, onClick = {
-                    minesWeeperGame.changeGameType(MinesWeeperGame.GameDifficultyType.Medium)
+                Item(MinesWeeperGame.DifficultyType.Medium.name, onClick = {
+                    minesWeeperGame.changeGameType(MinesWeeperGame.DifficultyType.Medium)
                 })
-                Item(MinesWeeperGame.GameDifficultyType.Hard.name, onClick = {
-                    minesWeeperGame.changeGameType(MinesWeeperGame.GameDifficultyType.Hard)
+                Item(MinesWeeperGame.DifficultyType.Hard.name, onClick = {
+                    minesWeeperGame.changeGameType(MinesWeeperGame.DifficultyType.Hard)
                 })
             }
             Item(stringResource(StringValueType.MENU_EXIT), onClick = {

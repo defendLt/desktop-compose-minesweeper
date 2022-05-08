@@ -23,13 +23,13 @@ import com.platdm.minesweeper.model.MinerPoint
 @Composable
 internal fun GameGrid(
     gameNumber: Int,
-    gameDifficultyType: MinesWeeperGame.GameDifficultyType,
+    difficultyType: MinesWeeperGame.DifficultyType,
     minerPoints: Map<Int, MinerPoint>,
     onClickEventListener: (OnCellClickEvent) -> Unit
 ){
-    for (y in 1..gameDifficultyType.h) {
+    for (y in 1..difficultyType.h) {
         Row {
-            for (x in 1..gameDifficultyType.w) {
+            for (x in 1..difficultyType.w) {
                 val index = remember(x, y) {
                     if (y > 9) {
                         y * 100 + x

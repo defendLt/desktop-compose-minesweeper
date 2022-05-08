@@ -7,16 +7,16 @@ import com.platdm.minesweeper.model.MinerPoint
 class MinesWeeperGame(
     private val gameStateScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) {
-    private var gameStep: Int = 0
-    private var gameNumber: Int = 0
-    private var gameStatus: GameStatus = GameStatus.WaitGame
-    private var gameDifficultyType: GameDifficultyType = GameDifficultyType.Easy
+    private var step: Int = 0
+    private var number: Int = 0
+    private var status: Status = Status.WaitGame
+    private var difficultyType: DifficultyType = DifficultyType.Easy
     private val minerPoints: MutableMap<Int, MinerPoint> = mutableMapOf()
     private var gameTimer: GameTimer = GameTimer()
     val gameTimerListener: GameTimerListener = gameTimer
 
     private val _gameState = MutableStateFlow(
-        GameState(gameStep, gameNumber, gameStatus, gameDifficultyType, minePointsCount, minerPoints)
+        GameState(step, number, status, difficultyType, minePointsCount, minerPoints)
     )
     val gameState: StateFlow<GameState> get() = _gameState.asStateFlow()
 
@@ -32,22 +32,22 @@ class MinesWeeperGame(
             generatePoints()
             generateMines()
             recalculateRadianMineCount()
-            gameStep = -1
-            gameStatus = GameStatus.InGame
-            gameNumber++
+            step = -1
+            status = Status.InGame
+            number++
             updateGameState()
         }
     }
 
-    fun changeGameType(gameDifficultyType: GameDifficultyType){
-        this.gameDifficultyType = gameDifficultyType
+    fun changeGameType(difficultyType: DifficultyType){
+        this.difficultyType = difficultyType
         resetGame()
     }
 
     fun openPoint(index: Int){
         minerPoints[index]?.let { point ->
             if (point.isMine && !point.isMark) {
-                gameStatus = GameStatus.Losing
+                status = Status.Losing
                 openAllPoints()
             } else if (!point.isOpen && !point.isMark) {
                 checkAndOpenRadianPoints(index)
@@ -60,8 +60,8 @@ class MinesWeeperGame(
         minerPoints[index]?.let { point ->
             if (!point.isMark && !point.isOpen) {
                 point.isMark = true
-                if(minerPoints.count { it.value.isMark && it.value.isMine } == gameDifficultyType.mineCount){
-                    gameStatus = GameStatus.Win
+                if(minerPoints.count { it.value.isMark && it.value.isMine } == difficultyType.mineCount){
+                    status = Status.Win
                     openAllPoints()
                 }
             } else {
@@ -127,8 +127,8 @@ class MinesWeeperGame(
 
     private fun generatePoints(){
         minerPoints.clear()
-        for (y in 1..gameDifficultyType.h) {
-            for (x in 1..gameDifficultyType.w){
+        for (y in 1..difficultyType.h) {
+            for (x in 1..difficultyType.w){
                 val index = if(y > 9){
                     y * 100 + x
                 } else y * 100 + x
@@ -140,7 +140,7 @@ class MinesWeeperGame(
     private fun generateMines(){
         val mineIndexes = mutableSetOf<Int>()
 
-        repeat(gameDifficultyType.mineCount){
+        repeat(difficultyType.mineCount){
             checkAndAddMine(mineIndexes, minerPoints.keys)
         }
 
@@ -194,18 +194,18 @@ class MinesWeeperGame(
     private fun updateGameState() {
         gameStateScope.launch {
             GameState(
-                ++gameStep, gameNumber, gameStatus, gameDifficultyType, minePointsCount, minerPoints.toMap()
+                ++step, number, status, difficultyType, minePointsCount, minerPoints.toMap()
             ).let {
-                if(gameStep == 1) gameTimer.start()
+                if(step == 1) gameTimer.start()
                 _gameState.emit(it)
             }
         }
     }
 
-    sealed class GameDifficultyType(val h: Int, val w: Int) {
-        object Easy : GameDifficultyType(8, 8)
-        object Medium : GameDifficultyType(16, 16)
-        object Hard : GameDifficultyType(16, 32)
+    sealed class DifficultyType(val h: Int, val w: Int) {
+        object Easy : DifficultyType(8, 8)
+        object Medium : DifficultyType(16, 16)
+        object Hard : DifficultyType(16, 32)
 
         val mineCount: Int
             get() = when (this) {
@@ -222,11 +222,11 @@ class MinesWeeperGame(
             }
     }
 
-    sealed interface GameStatus {
-        object WaitGame : GameStatus
-        object InGame : GameStatus
-        object Win : GameStatus
-        object Losing : GameStatus
+    sealed interface Status {
+        object WaitGame : Status
+        object InGame : Status
+        object Win : Status
+        object Losing : Status
 
         val name: String
             get() = when (this) {
@@ -238,10 +238,10 @@ class MinesWeeperGame(
     }
 
     data class GameState(
-        val gameStep: Int,
-        val gameNumber: Int,
-        val gameStatus: GameStatus,
-        val gameDifficultyType: GameDifficultyType,
+        val step: Int,
+        val number: Int,
+        val status: Status,
+        val difficultyType: DifficultyType,
         val minePointsCount: Int,
         val minerPoints: Map<Int, MinerPoint>
     )
