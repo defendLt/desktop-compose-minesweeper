@@ -129,9 +129,7 @@ class MinesWeeperGame(
         minerPoints.clear()
         for (y in 1..difficultyType.h) {
             for (x in 1..difficultyType.w){
-                val index = if(y > 9){
-                    y * 100 + x
-                } else y * 100 + x
+                val index = y * 100 + x
                 minerPoints[index] = MinerPoint(index, x, y, getRadianIndexes(index))
             }
         }
@@ -149,10 +147,10 @@ class MinesWeeperGame(
         }
     }
 
-    private fun checkAndAddMine(mineIndexes: MutableSet<Int>, indexesPoints: Set<Int>){
-        val random = (indexesPoints).random()
+    private fun checkAndAddMine(mineIndexes: MutableSet<Int>, pointsIndexes: Set<Int>){
+        val random = (pointsIndexes).random()
         if (mineIndexes.contains(random)) {
-            checkAndAddMine(mineIndexes, indexesPoints)
+            checkAndAddMine(mineIndexes, pointsIndexes)
         } else mineIndexes.add(random)
     }
 
