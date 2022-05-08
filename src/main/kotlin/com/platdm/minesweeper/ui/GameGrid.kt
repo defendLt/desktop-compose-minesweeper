@@ -1,7 +1,7 @@
-package ui
+package com.platdm.minesweeper.ui
 
-import MinesWeeperGame
-import OnCellClickEvent
+import com.platdm.minesweeper.MinesWeeperGame
+import com.platdm.minesweeper.OnCellClickEvent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -17,19 +17,19 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import model.MinerPoint
+import com.platdm.minesweeper.model.MinerPoint
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun GameGrid(
     gameNumber: Int,
-    gameType: MinesWeeperGame.GameType,
-    gameState: MinesWeeperGame.GameState,
+    gameDifficultyType: MinesWeeperGame.GameDifficultyType,
+    minerPoints: Map<Int, MinerPoint>,
     onClickEventListener: (OnCellClickEvent) -> Unit
 ){
-    for (y in 1..gameType.h) {
+    for (y in 1..gameDifficultyType.h) {
         Row {
-            for (x in 1..gameType.w) {
+            for (x in 1..gameDifficultyType.w) {
                 val index = remember(x, y) {
                     if (y > 9) {
                         y * 100 + x
@@ -37,57 +37,68 @@ internal fun GameGrid(
                 }
 
                 val point = remember(gameNumber, index) {
-                    gameState.minerPoints[index]!!
+                    minerPoints[index]!!
                 }
 
-                GameSell(gameNumber, index, point, onClickEventListener)
+                val rememberUpdateState = remember {
+                    Modifier.combinedClickable(
+                        onClick = {
+                            onClickEventListener(OnCellClickEvent.OnSingleClick(index))
+                        },
+                        onLongClick = {
+                            onClickEventListener(OnCellClickEvent.OnLongClick(index))
+                        },
+                        onDoubleClick = {
+                            onClickEventListener(OnCellClickEvent.OnDoubleClick(index))
+                        }
+                    ).onPointerEvent(PointerEventType.Press) {
+                        if (it.buttons.isSecondaryPressed) {
+                            onClickEventListener(OnCellClickEvent.OnLongClick(index))
+                        }
+                    }
+                }
+
+                GameSell(gameNumber,
+                    index,
+                    point.radianMineCount,
+                    point.isOpen,
+                    point.isMine,
+                    point.isMark,
+                    combinedClickable = rememberUpdateState
+                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun GameSell(
     gameNumber: Int,
     index: Int,
-    point: MinerPoint,
-    onClickEventListener: (OnCellClickEvent) -> Unit
+    radianMineCount: Int,
+    isOpen: Boolean = false,
+    isMine: Boolean = false,
+    isMark: Boolean = false,
+    combinedClickable: Modifier
 ) {
-    val background = animateColorAsState(if (point.isOpen) MineSweeperStyles.cellOpenColor else MineSweeperStyles.cellCloseColor)
+    val background = animateColorAsState(if (isOpen) MineSweeperStyles.cellOpenColor else MineSweeperStyles.cellCloseColor)
 
     Box(
-        modifier = Modifier
+        modifier = combinedClickable
             .background(background.value)
             .border(BorderStroke(MineSweeperStyles.cellBorderSize, MineSweeperStyles.cellBorderColor))
-            .size(MineSweeperStyles.cellSize, MineSweeperStyles.cellSize)
-            .onPointerEvent(PointerEventType.Press) {
-                if (it.buttons.isSecondaryPressed) {
-                    onClickEventListener(OnCellClickEvent.OnLongClick(index))
-                }
-            }
-            .combinedClickable(
-                onClick = {
-                    onClickEventListener(OnCellClickEvent.OnSingleClick(index))
-                },
-                onLongClick = {
-                    onClickEventListener(OnCellClickEvent.OnLongClick(index))
-                },
-                onDoubleClick = {
-                    onClickEventListener(OnCellClickEvent.OnDoubleClick(index))
-                }
-            ),
+            .size(MineSweeperStyles.cellSize, MineSweeperStyles.cellSize),
         contentAlignment = Alignment.Center
     ) {
         val minesCount = remember(gameNumber, index) {
-            if (point.radianMineCount > 0) "${point.radianMineCount}"
+            if (radianMineCount > 0) "$radianMineCount"
             else ""
         }
-        if (point.isOpen && point.isMine) {
+        if (isOpen && isMine) {
             Mine()
-        } else if (point.isOpen) {
+        } else if (isOpen) {
             Open(minesCount)
-        } else if (point.isMark) {
+        } else if (isMark) {
             Flag()
         }
     }

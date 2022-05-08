@@ -22,7 +22,7 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "com.platdm.minesweeper.MainKt"
 
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("xxx"))

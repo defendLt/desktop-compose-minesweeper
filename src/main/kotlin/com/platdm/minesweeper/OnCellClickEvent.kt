@@ -1,3 +1,5 @@
+package com.platdm.minesweeper
+
 internal sealed interface OnCellClickEvent {
     @JvmInline
     value class OnSingleClick(val index: Int) : OnCellClickEvent

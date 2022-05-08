@@ -1,3 +1,5 @@
+package com.platdm.minesweeper
+
 enum class StringValueType {
     WINDOW_TITLE,
 

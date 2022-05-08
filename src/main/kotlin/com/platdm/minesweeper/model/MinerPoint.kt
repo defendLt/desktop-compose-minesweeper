@@ -1,4 +1,4 @@
-package model
+package com.platdm.minesweeper.model
 
 data class MinerPoint(
     val index: Int,
