@@ -6,12 +6,11 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
@@ -59,14 +58,17 @@ internal fun GameGrid(
                     }
                 }
 
+                val cellBackground = animateColorAsState(if (point.isOpen) MineSweeperStyles.cellOpenColor else MineSweeperStyles.cellCloseColor)
+
                 key(index, point.isOpen) {
-                    GameSell(
+                    GameCell(
                         gameNumber,
                         index,
                         point.radianMineCount,
                         point.isOpen,
                         point.isMine,
                         point.isMark,
+                        cellBackground,
                         combinedClickable = rememberUpdateState
                     )
                 }
@@ -76,17 +78,16 @@ internal fun GameGrid(
 }
 
 @Composable
-internal fun GameSell(
+internal fun GameCell(
     gameNumber: Int,
     index: Int,
     radianMineCount: Int,
     isOpen: Boolean = false,
     isMine: Boolean = false,
     isMark: Boolean = false,
+    background: State<Color>,
     combinedClickable: Modifier
 ) {
-    val background = animateColorAsState(if (isOpen) MineSweeperStyles.cellOpenColor else MineSweeperStyles.cellCloseColor)
-
     Box(
         modifier = combinedClickable
             .background(background.value)
