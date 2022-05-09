@@ -7,6 +7,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -58,14 +59,17 @@ internal fun GameGrid(
                     }
                 }
 
-                GameSell(gameNumber,
-                    index,
-                    point.radianMineCount,
-                    point.isOpen,
-                    point.isMine,
-                    point.isMark,
-                    combinedClickable = rememberUpdateState
-                )
+                key(index, point.isOpen) {
+                    GameSell(
+                        gameNumber,
+                        index,
+                        point.radianMineCount,
+                        point.isOpen,
+                        point.isMine,
+                        point.isMark,
+                        combinedClickable = rememberUpdateState
+                    )
+                }
             }
         }
     }

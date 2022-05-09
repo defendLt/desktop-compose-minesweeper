@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.*
 import com.platdm.minesweeper.model.MinerPoint
 
 class MinesWeeperGame(
-    private val gameStateScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val gameCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) {
     private var step: Int = 0
     private var number: Int = 0
@@ -21,20 +21,19 @@ class MinesWeeperGame(
     val gameState: StateFlow<GameState> get() = _gameState.asStateFlow()
 
     private val minePointsCount
-        get() = minerPoints.count { it.value.isMine } - minerPoints.count { it.value.isMark }
+        get() = difficultyType.mineCount - minerPoints.count { it.value.isMark }
 
     init {
         resetGame()
     }
 
     fun resetGame() {
-        gameStateScope.launch {
+        gameCoroutineScope.launch {
             generatePoints()
-            generateMines()
-            recalculateRadianMineCount()
             step = -1
             status = Status.InGame
             number++
+            gameTimer.reset()
             updateGameState()
         }
     }
@@ -45,6 +44,10 @@ class MinesWeeperGame(
     }
 
     fun openPoint(index: Int){
+        if(step == 0){
+            generateMines(index)
+            recalculateRadianMineCount()
+        }
         minerPoints[index]?.let { point ->
             if (point.isMine && !point.isMark) {
                 status = Status.Losing
@@ -57,6 +60,10 @@ class MinesWeeperGame(
     }
 
     fun markPoint(index: Int){
+        if(step == 0){
+            generateMines()
+            recalculateRadianMineCount()
+        }
         minerPoints[index]?.let { point ->
             if (!point.isMark && !point.isOpen) {
                 point.isMark = true
@@ -135,11 +142,15 @@ class MinesWeeperGame(
         }
     }
 
-    private fun generateMines(){
+    private fun generateMines(ignoreIndex: Int? = null){
         val mineIndexes = mutableSetOf<Int>()
 
+        val ignoreIndexes = if(ignoreIndex != null){
+            minerPoints[ignoreIndex]!!.radianIndexes + ignoreIndex
+        } else emptySet()
+
         repeat(difficultyType.mineCount){
-            checkAndAddMine(mineIndexes, minerPoints.keys)
+            checkAndAddMine(mineIndexes, minerPoints.keys - ignoreIndexes)
         }
 
         mineIndexes.forEach {
@@ -190,7 +201,7 @@ class MinesWeeperGame(
     }
 
     private fun updateGameState() {
-        gameStateScope.launch {
+        gameCoroutineScope.launch {
             GameState(
                 ++step, number, status, difficultyType, minePointsCount, minerPoints.toMap()
             ).let {
@@ -260,7 +271,7 @@ class MinesWeeperGame(
             timerJob = timerScope.launch {
                 var timeValue = 0
                 _timerStateFlow.emit(timeValue)
-                while (true) {
+                while (isActive) {
                     delay(1000)
                     _timerStateFlow.emit(++timeValue)
                 }
@@ -269,6 +280,13 @@ class MinesWeeperGame(
 
         fun stop() {
             timerJob?.cancel()
+        }
+
+        fun reset(){
+            stop()
+            timerJob = timerScope.launch {
+                _timerStateFlow.emit(0)
+            }
         }
     }
 }
